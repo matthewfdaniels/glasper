@@ -63,5 +63,8 @@ for filename in wavfiles:
         objs.append(obj)
 
     name = filepath.split('.wav')[0]
-    with open(name + ' ' + str(HZ) + 'Hz.json', 'w') as f:
+    namestr = name + ' ' + str(HZ) + 'Hz.json'
+    namestr = namestr.replace(' 1', '')
+    namestr = namestr.lower().replace(' ', '_')
+    with open(namestr, 'w') as f:
         json.dump(objs, f)
