@@ -3,6 +3,7 @@ var lastSource;
 var scratch;
 var bufferArray;
 var vizData;
+var duration;
 
 function playMusic(){
 
@@ -156,6 +157,14 @@ playMusic();
 
 d3.select("body").on("click",function(){
 
+  d3.select(".marker")
+    .style("left","0px")
+    .transition()
+    .duration(duration)
+    .ease("linear")
+    .style("left","600px")
+    ;
+
   playHelper(bufferArray[0],"30000",context.currentTime,"now");
 
   //
@@ -180,7 +189,6 @@ d3.select("body").on("click",function(){
 var noteArray = [];
 
 d3.json("viz/keys_midi.json", function(error, data) {
-    console.log(data); // this is your data
     for (key in data){
       for (note in data[key].notes){
         noteArray.push(data[key].notes[note]);
@@ -193,6 +201,37 @@ d3.json("viz/keys_midi.json", function(error, data) {
       if (o1 > o2) return -1;
       if (o1 < o2) return 1;
       return 0;
-    })
+    });
+
+    noteArray = noteArray.slice(0,50)
     console.log(noteArray);
+    var startTimeMin = d3.min(noteArray,function(d){return d.startTime});
+    var startTimeMax = d3.max(noteArray,function(d){return d.startTime});
+    duration = startTimeMax - startTimeMin;
+    var width = 600;
+    var leftScale = d3.scale.linear().domain([startTimeMin,startTimeMax]).range([0,width]);
+
+    d3.select("body")
+      .append("div")
+      .selectAll("div")
+      .data(noteArray)
+      .enter()
+      .append("div")
+      .attr("class","circle")
+      .style("left",function(d){
+        return leftScale(d.startTime)+"px"
+      })
+      ;
+
+    d3.select("body")
+      .append("div")
+      .attr("class","marker")
+      ;
+
+
+
+
+
+
+
 });
