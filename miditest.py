@@ -1,13 +1,14 @@
 import midi
 import json
 from datascience import *
+from jwp.jwcsv import *
 import numpy as np
 
-pattern = midi.read_midifile('Keys_01.mid')
+pattern = midi.read_midifile('twoloop.mid')
 
 BPM = 88  # tempo of song
 RES = pattern.resolution  # resolution of ticks
-USPB = 60 * 1000000 / BPM  # us per beat
+USPB = 60 * 1000000 / BPM  # microseconds per beat
 FR = 60
 
 
@@ -17,7 +18,8 @@ def tick_to_time(tick):
 
 
 def quantize_to_FR(us):
-    mspf = 1 / FR * 1000
+    mspf = 1 / FR * 1000  # miliseconds per frame
+    # convert us to ms, round to nearest frame time
     return (us / 1000) // mspf * mspf
 
 
@@ -57,7 +59,7 @@ write_csv('miditest.csv', out, dict_headers=dkeys)
 
 '''Load amplitude for reference'''
 
-with open('16/Keys_01 1 60Hz.json', 'r') as f:
+with open('json/amplitude/keys_01_60hz.json', 'r') as f:
     key_amp = json.load(f)
 rows = []
 for d in key_amp:
