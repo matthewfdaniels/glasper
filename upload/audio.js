@@ -19,7 +19,7 @@ function playMusic(){
   // playing = true;
 
   var currTime = context.currentTime;
-  var currSong = ["audio/keys_loop.wav","https://p.scdn.co/mp3-preview/14253ebfa0cbf0282999222261ba39c79d34f9fc"];
+  var currSong = ["audio/keys_loop.wav","audio/vocal.wav"];
   var startTime = currTime + 1;
   var playLength = 30000;
   loadSounds(currSong, playLength, startTime, "now");
@@ -165,6 +165,7 @@ d3.select("body").on("click",function(){
     .style("left","600px")
     ;
 
+  playHelper(bufferArray[1],"30000",context.currentTime,"now");
   playHelper(bufferArray[0],"30000",context.currentTime,"now");
 
   //
