@@ -146,9 +146,11 @@ function finishedLoading(bufferList,playingLength,startingTime,thing) {
 
       d3.select(this).on("click",function(d,i){
         if(gainNode.gain.value==0){
+          d3.select(this).style("opacity",1);
           gainNode.gain.setValueAtTime(1, context.currentTime);
         }
         else if(gainNode.gain.value==1){
+          d3.select(this).style("opacity",.5);
           gainNode.gain.setValueAtTime(0, context.currentTime);
         }
         ;
