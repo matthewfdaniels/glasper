@@ -5,6 +5,8 @@ var bufferArray;
 var vizData;
 var duration;
 
+var fileArray = ["audio/keys_loop.wav","audio/vocal.wav"];
+
 function playMusic(){
 
   // var playNow2 = createSource(scratch);
@@ -19,10 +21,9 @@ function playMusic(){
   // playing = true;
 
   var currTime = context.currentTime;
-  var currSong = ["audio/keys_loop.wav","audio/vocal.wav"];
   var startTime = currTime + 1;
   var playLength = 30000;
-  loadSounds(currSong, playLength, startTime, "now");
+  loadSounds(fileArray, playLength, startTime, "now");
 }
 
 function BufferLoader(context, urlList, callback, playingLength, startingTime, thing) {
@@ -109,7 +110,57 @@ function loadSounds(url,playingLength,startingTime,thing){
 
 function finishedLoading(bufferList,playingLength,startingTime,thing) {
   bufferArray = bufferList;
-  // playHelper(bufferList[0],playingLength,startingTime,thing);
+
+  sampler.selectAll("div")
+    .data(bufferArray)
+    .enter()
+    .append("div")
+    .attr("class","sample-item")
+    .style("background-color",function(d,i){
+      if(i==0){
+        return "red"
+      }
+      if(i==1){
+        return "green"
+      }
+    })
+    .each(function(d){
+      var currTime = context.currentTime;
+
+      var playNow = createSource(d);
+      source = playNow.source;
+      source.loop = true;
+      var gainNode = playNow.gainNode;
+      var duration = "30000"/1000 + 2;
+
+      // gainNode.gain.linearRampToValueAtTime(1, currTime);
+      // gainNode.gain.linearRampToValueAtTime(1, currTime + 2);
+
+      if (!source.start){
+        source.start = source.noteOn;
+      }
+
+      source.start(context.currentTime + (startingTime - context.currentTime));
+      // gainNode.gain.linearRampToValueAtTime(1, startingTime + duration-2);
+      // gainNode.gain.linearRampToValueAtTime(0, startingTime + duration);
+
+      d3.select(this).on("click",function(d,i){
+        if(gainNode.gain.value==0){
+          gainNode.gain.setValueAtTime(1, context.currentTime);
+        }
+        else if(gainNode.gain.value==1){
+          gainNode.gain.setValueAtTime(0, context.currentTime);
+        }
+        ;
+
+        // gainNode.gain.linearRampToValueAtTime(1,context.currentTime);
+        // gainNode.gain.linearRampToValueAtTime(0, context.currentTime+1);
+
+        // console.log(gainNode.gain.linearRampToValueAtTime(0,context.currentTime));
+      })
+    })
+    ;
+
 };
 
 function createSource(buffer) {
@@ -128,7 +179,6 @@ function createSource(buffer) {
 }
 
 function playHelper(bufferNow,playingLength,startingTime,thing) {
-
     var currTime = context.currentTime;
     lastSource = source;
     var playNow = createSource(bufferNow);
@@ -138,7 +188,6 @@ function playHelper(bufferNow,playingLength,startingTime,thing) {
     var duration = playingLength/1000 + 2;
 
     gainNode.gain.linearRampToValueAtTime(1, startingTime);
-    // gainNode.gain.linearRampToValueAtTime(0, startingTime);
     gainNode.gain.linearRampToValueAtTime(1, startingTime + 2);
 
     if (!source.start){
@@ -146,99 +195,99 @@ function playHelper(bufferNow,playingLength,startingTime,thing) {
     }
 
     source.start(context.currentTime + (startingTime - context.currentTime));
-
     gainNode.gain.linearRampToValueAtTime(1, startingTime + duration-2);
     gainNode.gain.linearRampToValueAtTime(0, startingTime + duration);
-
 }
 
 playMusic();
 // loadScratch("https://p.scdn.co/mp3-preview/b868c11bc56b76f19b4db1f199e43e0e7c13c90d");
-
-d3.select("body").on("click",function(){
-
-  d3.select(".marker")
-    .style("left","0px")
-    .transition()
-    .duration(10000)
-    .ease("linear")
-    .style("left","600px")
-    ;
-
-  // playHelper(bufferArray[1],"30000",context.currentTime,"now");
-  playHelper(bufferArray[0],"30000",context.currentTime,"now");
-
-  //
-  // var playNow2 = createSource(bufferArray[0]);
-  // source2 = playNow2.source;
-  //
-  // if (!source2.start){
-  //   source2.start = source.noteOn;
-  // }
-  // source2.start(0);
-
-  // var playNow2 = createSource(scratch);
-  // source2 = playNow2.source;
-  //
-  // if (!source2.start){
-  //   source2.start = source.noteOn;
-  // }
-  // source2.start(0);
-})
-;
+//
+// d3.select("body").on("click",function(){
+//
+//   d3.select(".marker")
+//     .style("left","0px")
+//     .transition()
+//     .duration(10000)
+//     .ease("linear")
+//     .style("left","600px")
+//     ;
+//
+//   // playHelper(bufferArray[1],"30000",context.currentTime,"now");
+//   playHelper(bufferArray[0],"30000",context.currentTime,"now");
+//
+//   //
+//   // var playNow2 = createSource(bufferArray[0]);
+//   // source2 = playNow2.source;
+//   //
+//   // if (!source2.start){
+//   //   source2.start = source.noteOn;
+//   // }
+//   // source2.start(0);
+//
+//   // var playNow2 = createSource(scratch);
+//   // source2 = playNow2.source;
+//   //
+//   // if (!source2.start){
+//   //   source2.start = source.noteOn;
+//   // }
+//   // source2.start(0);
+// })
+// ;
 
 var noteArray = [];
 
-d3.json("viz/keys_01_60hz.json", function(error, data) {
+var sampler = d3.select(".sampler");
 
-    data = [16,69,141,337,529,784,835,913,1106,1297];
-
-    function midiAdjust(time){
-      return time*(60000 / (88 * 96));
-    }
-
-    var noteArray = [];
-
-    for (note in data){
-      noteArray.push(midiAdjust(data[note]));
-    }
-
-    // noteArray = noteArray.sort(function(b,a) {
-    //   var o1 = +a.startTime;
-    //   var o2 = +b.startTime;
-    //
-    //   if (o1 > o2) return -1;
-    //   if (o1 < o2) return 1;
-    //   return 0;
-    // });
-    //
-    // var startTimeMin = d3.min(noteArray,function(d){return d.startTime});
-    // var startTimeMax = d3.max(noteArray,function(d){return d.startTime});
-    // duration = startTimeMax - startTimeMin;
-    var width = 600;
-    var leftScale = d3.scale.linear().domain([0,10000]).range([0,width]);
-    //
-    d3.select("body")
-      .append("div")
-      .selectAll("div")
-      .data(noteArray)
-      .enter()
-      .append("div")
-      .attr("class","circle")
-      .style("left",function(d){
-        return leftScale(d)+"px"
-      })
-      ;
-    //
-    d3.select("body")
-      .append("div")
-      .attr("class","marker")
-      ;
-
-
-
-
-
-
-
-});
+// d3.json("viz/keys_01_60hz.json", function(error, data) {
+//
+//     data = [16,69,141,337,529,784,835,913,1106,1297];
+//
+//     function midiAdjust(time){
+//       return time*(60000 / (88 * 96));
+//     }
+//
+//     var noteArray = [];
+//
+//     for (note in data){
+//       noteArray.push(midiAdjust(data[note]));
+//     }
+//
+//     // noteArray = noteArray.sort(function(b,a) {
+//     //   var o1 = +a.startTime;
+//     //   var o2 = +b.startTime;
+//     //
+//     //   if (o1 > o2) return -1;
+//     //   if (o1 < o2) return 1;
+//     //   return 0;
+//     // });
+//     //
+//     // var startTimeMin = d3.min(noteArray,function(d){return d.startTime});
+//     // var startTimeMax = d3.max(noteArray,function(d){return d.startTime});
+//     // duration = startTimeMax - startTimeMin;
+//     var width = 600;
+//     var leftScale = d3.scale.linear().domain([0,10000]).range([0,width]);
+//     //
+//     d3.select("body")
+//       .append("div")
+//       .selectAll("div")
+//       .data(noteArray)
+//       .enter()
+//       .append("div")
+//       .attr("class","circle")
+//       .style("left",function(d){
+//         return leftScale(d)+"px"
+//       })
+//       ;
+//     //
+//     d3.select("body")
+//       .append("div")
+//       .attr("class","marker")
+//       ;
+//
+//
+//
+//
+//
+//
+//
+// });
